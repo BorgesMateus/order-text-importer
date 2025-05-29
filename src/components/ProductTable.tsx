@@ -5,9 +5,11 @@ import type { Product } from '@/types/Product';
 
 interface ProductTableProps {
   products: Product[];
+  deliveryFee: number;
+  total: number;
 }
 
-const ProductTable: React.FC<ProductTableProps> = ({ products }) => {
+const ProductTable: React.FC<ProductTableProps> = ({ products, deliveryFee, total }) => {
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -54,6 +56,19 @@ const ProductTable: React.FC<ProductTableProps> = ({ products }) => {
             <TableHead className="font-semibold text-[#cc0b11] border-b-2 border-[#cc0b11] py-4 text-right">
               Peso Total (kg)
             </TableHead>
+            <TableHead className="font-semibold text-[#cc0b11] border-b-2 border-[#cc0b11] py-4 text-right">
+              <div className="flex flex-col items-end">
+                <span>Total do Pedido</span>
+                <div className="text-lg font-bold text-[#cc0b11] mt-1">
+                  {formatPrice(total)}
+                </div>
+                {deliveryFee > 0 && (
+                  <span className="text-xs text-gray-600 mt-1">
+                    (+ {formatPrice(deliveryFee)} frete)
+                  </span>
+                )}
+              </div>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -85,6 +100,9 @@ const ProductTable: React.FC<ProductTableProps> = ({ products }) => {
               </TableCell>
               <TableCell className="py-4 text-right">
                 {formatWeight(product.totalWeight)}
+              </TableCell>
+              <TableCell className="py-4">
+                {/* Coluna vazia para alinhar com o total */}
               </TableCell>
             </TableRow>
           ))}
