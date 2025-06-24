@@ -1,3 +1,4 @@
+
 import type { Product, Customer, ParseResult } from '@/types/Product';
 
 // Simulação de banco de dados de clientes
@@ -25,7 +26,13 @@ export const lookupCustomer = async (customerCode: string): Promise<Customer> =>
   return customer;
 };
 
-export const parseOrderText = (text: string): ParseResult & { deliveryFee: number; total: number } => {
+export interface OrderSummary {
+  totalKg: number;
+  totalPackages: number;
+  totalValue: number;
+}
+
+export const parseOrderText = (text: string): ParseResult & { deliveryFee: number; total: number; summary: OrderSummary } => {
   console.log('Iniciando parse do texto do pedido...');
   
   const products: Product[] = [];
@@ -33,8 +40,8 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
   const lines = text.split('\n').filter(line => line.trim());
   let deliveryFee = 0;
 
-  // Novo regex para capturar o padrão: • quantidade x descrição - unidade - preço - peso - código
-  const productRegex = /^•\s*(\d+(?:\.\d+)?)x\s+(.+?)\s+-\s+([A-Z]+)\s+-\s+R\$(\d+(?:[,.]\d+)?)\s+-\s+Peso\s+total:\s+(\d+(?:[,.]\d+)?)kg\s+.*?-\s+(\d+)$/i;
+  // Regex para capturar: quantidade x produto - unidade - preço - peso total - código
+  const productRegex = /^(\d+(?:\.\d+)?)x\s+(.+?)\s+-\s+(PC|KG)\s+-\s+R\$(\d+(?:[,.]\d+)?)\s+-\s+Peso\s+total:\s+(\d+(?:[,.]\d+)?)kg\s+-\s+(\d+)$/i;
   
   // Regex para capturar taxa de entrega
   const deliveryFeeRegex = /Taxa\s+de\s+entrega:\s+R\$(\d+(?:[,.]\d+)?)/i;
@@ -51,9 +58,9 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
       return;
     }
     
-    // Verificar se a linha contém "•" para ser considerada um item
-    if (!line.includes('•')) {
-      console.log(`Linha ${lineNumber} ignorada - não contém '•'`);
+    // Verificar se a linha contém padrão de produto (quantidade x produto)
+    if (!/^\d+(?:\.\d+)?x\s+/.test(line.trim())) {
+      console.log(`Linha ${lineNumber} ignorada - não é um produto`);
       return;
     }
 
@@ -71,23 +78,27 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
       
       // Converter valores numéricos
       const quantity = parseFloat(quantityStr.replace(',', '.'));
-      const price = parseFloat(priceStr.replace(',', '.'));
+      const unitPrice = parseFloat(priceStr.replace(',', '.'));
       const totalWeight = parseFloat(weightStr.replace(',', '.'));
       
       // Validar se todos os valores são números válidos
-      if (isNaN(quantity) || isNaN(price) || isNaN(totalWeight)) {
+      if (isNaN(quantity) || isNaN(unitPrice) || isNaN(totalWeight)) {
         const error = `Linha ${lineNumber}: Valores numéricos inválidos`;
         console.log(error);
         errors.push(error);
         return;
       }
 
+      // Calcular preço total do item (quantidade * preço unitário)
+      const totalPrice = quantity * unitPrice;
+
       const product: Product = {
         code: code.trim(),
         quantity,
         description: description.trim(),
         unit: unit.trim().toUpperCase(),
-        price,
+        price: totalPrice, // Agora é o total do item (quantidade * preço unitário)
+        unitPrice, // Novo campo para preço unitário
         totalWeight
       };
 
@@ -101,12 +112,30 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
     }
   });
 
-  // Calcular total dos produtos
-  const productsTotal = products.reduce((sum, product) => sum + product.price, 0);
-  const total = productsTotal + deliveryFee;
+  // Calcular totais conforme as regras
+  let totalKg = 0;
+  let totalPackages = 0;
+  let totalValue = 0;
+
+  products.forEach(product => {
+    if (product.unit === 'KG') {
+      totalKg += product.totalWeight; // Para KG, somar o peso total
+    } else if (product.unit === 'PC') {
+      totalPackages += product.quantity; // Para PC, somar a quantidade de pacotes
+    }
+    totalValue += product.price; // Somar o valor total de cada item
+  });
+
+  const summary: OrderSummary = {
+    totalKg,
+    totalPackages,
+    totalValue
+  };
+
+  const total = totalValue + deliveryFee;
 
   console.log(`Parse concluído: ${products.length} produtos válidos, ${errors.length} erros`);
-  console.log(`Total dos produtos: R$${productsTotal.toFixed(2)}, Taxa de entrega: R$${deliveryFee.toFixed(2)}, Total: R$${total.toFixed(2)}`);
+  console.log(`Total KG: ${totalKg}kg, Total Pacotes: ${totalPackages}, Valor produtos: R$${totalValue.toFixed(2)}, Taxa: R$${deliveryFee.toFixed(2)}, Total: R$${total.toFixed(2)}`);
   
-  return { products, errors, deliveryFee, total };
+  return { products, errors, deliveryFee, total, summary };
 };

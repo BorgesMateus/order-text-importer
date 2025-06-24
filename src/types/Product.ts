@@ -4,7 +4,8 @@ export interface Product {
   quantity: number;
   description: string;
   unit: string;
-  price: number;
+  price: number; // Preço total do item (quantidade * preço unitário)
+  unitPrice?: number; // Preço unitário
   totalWeight: number;
 }
 

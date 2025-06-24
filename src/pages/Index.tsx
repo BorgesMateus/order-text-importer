@@ -20,6 +20,7 @@ const Index = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [total, setTotal] = useState(0);
+  const [summary, setSummary] = useState({ totalKg: 0, totalPackages: 0, totalValue: 0 });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const { toast } = useToast();
@@ -54,6 +55,7 @@ const Index = () => {
       setProducts(result.products);
       setDeliveryFee(result.deliveryFee);
       setTotal(result.total);
+      setSummary(result.summary);
       setErrors(result.errors);
 
       if (result.products.length === 0) {
@@ -256,6 +258,7 @@ const Index = () => {
                     products={products} 
                     deliveryFee={deliveryFee}
                     total={total}
+                    summary={summary}
                   />
                 </CardContent>
               </Card>
