@@ -1,4 +1,3 @@
-
 import type { Product, Customer, ParseResult } from '@/types/Product';
 
 // Simulação de banco de dados de clientes
@@ -34,8 +33,8 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
   const lines = text.split('\n').filter(line => line.trim());
   let deliveryFee = 0;
 
-  // Regex para capturar o padrão: quantidade x descrição - unidade - preço - peso - código
-  const productRegex = /^(\d+(?:\.\d+)?)x\s+(.+?)\s+-\s+R\$(\d+(?:[,.]\d+)?)\s+-\s+(?:Peso|Piso)\s+total:\s+(\d+(?:[,.]\d+)?)kg\s+-\s+(\d+)$/i;
+  // Novo regex para capturar o padrão: • quantidade x descrição - unidade - preço - peso - código
+  const productRegex = /^•\s*(\d+(?:\.\d+)?)x\s+(.+?)\s+-\s+([A-Z]+)\s+-\s+R\$(\d+(?:[,.]\d+)?)\s+-\s+Peso\s+total:\s+(\d+(?:[,.]\d+)?)kg\s+.*?-\s+(\d+)$/i;
   
   // Regex para capturar taxa de entrega
   const deliveryFeeRegex = /Taxa\s+de\s+entrega:\s+R\$(\d+(?:[,.]\d+)?)/i;
@@ -52,9 +51,9 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
       return;
     }
     
-    // Verificar se a linha contém "x " para ser considerada um item
-    if (!line.includes('x ')) {
-      console.log(`Linha ${lineNumber} ignorada - não contém 'x '`);
+    // Verificar se a linha contém "•" para ser considerada um item
+    if (!line.includes('•')) {
+      console.log(`Linha ${lineNumber} ignorada - não contém '•'`);
       return;
     }
 
@@ -68,7 +67,7 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
     }
 
     try {
-      const [, quantityStr, description, priceStr, weightStr, code] = match;
+      const [, quantityStr, description, unit, priceStr, weightStr, code] = match;
       
       // Converter valores numéricos
       const quantity = parseFloat(quantityStr.replace(',', '.'));
@@ -81,12 +80,6 @@ export const parseOrderText = (text: string): ParseResult & { deliveryFee: numbe
         console.log(error);
         errors.push(error);
         return;
-      }
-
-      // Extrair unidade da descrição (assumindo padrão PCT/KG)
-      let unit = 'PC'; // padrão
-      if (description.toLowerCase().includes('kg') || description.toLowerCase().includes('kilo')) {
-        unit = 'KG';
       }
 
       const product: Product = {

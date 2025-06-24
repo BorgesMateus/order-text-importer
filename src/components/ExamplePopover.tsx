@@ -5,16 +5,14 @@ import { HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const ExamplePopover: React.FC = () => {
-  const exampleText = `Produtos:
-1x SALG FESTA RISOLE BOLIVIANO PCT 50 UNID (Pacote 50un) - R$18.30 - Peso total: 0.85kg - 20034
-1x BROA DOCE 35G PCT 1KG (Pacote 1kg) - R$16.90 - Peso total: 1.00kg - 50615
-1x PAO DE LEITE 50G PCT 3,5K (Pacote) - R$35.35 - Peso total: 3.50kg - 81
-1x PAO MANDI 70G PCT 3,5K (Pacote) - R$39.55 - Peso total: 3.50kg - 80
+  const exampleText = `Novo Pedido
+Produtos:
+• 6x SALG FESTA COXINHA C/ REQUEIJAO PCT 50 UNID - PC - R$18.3 - Peso total: 5.10kg (6 pacotes * 0.85kg/pacote) - 20001
+• 6x SALG FESTA KIBE C/ CATUPIRY PCT 50 UNID - PC - R$18.3 - Peso total: 5.10kg (6 pacotes * 0.85kg/pacote) - 20007
+• 3x SALG FESTA CROQUETE DE QUEIJO PCT 50 UNID - PC - R$18.3 - Peso total: 2.55kg (3 pacotes * 0.85kg/pacote) - 20035
+• 2x PAO DE QUEIJO GG 15G PCT 1KG - KG - R$18.4 - Peso total: 2.00kg (2 pacotes * 1.0kg/pacote) - 10034
 
-Entrega para: Parkway
 Taxa de entrega: R$15.00
-Forma de pagamento: Pix
-
 Total: R$125.10`;
 
   return (
@@ -40,9 +38,9 @@ Total: R$125.10`;
             </pre>
           </div>
           <div className="text-xs text-gray-500 space-y-1">
-            <p><strong>Formato do produto:</strong> {'{quantidade}'}x {'{descrição}'} - R${'{preço}'} - Peso total: {'{peso}'}kg - {'{código}'}</p>
+            <p><strong>Formato do produto:</strong> • {'{quantidade}'}x {'{descrição}'} - {'{unidade}'} - R${'{preço}'} - Peso total: {'{peso}'}kg - {'{código}'}</p>
             <p><strong>Taxa de entrega:</strong> Taxa de entrega: R${'{valor}'}</p>
-            <p><strong>Nota:</strong> Aceita "Peso total:" ou "Piso total:"</p>
+            <p><strong>Nota:</strong> Cada produto deve começar com • (bullet point)</p>
           </div>
         </div>
       </PopoverContent>
